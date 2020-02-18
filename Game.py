@@ -19,6 +19,13 @@ class Game():
         """
         pass
 
+    def toArray(self, board):
+        """
+        Returns:
+            a board representation suitable as the input to your neural network
+        """
+        return board
+
     def getBoardSize(self):
         """
         Returns:

@@ -12,6 +12,7 @@
     - TicTacToe                             [Yes]
     - Connect4                  [Yes]
     - Gobang                    [Yes]       [Yes]
+    - Chess         [Yes]
 
 """
 
@@ -23,6 +24,9 @@ from MCTS import MCTS
 from tictactoe.TicTacToeGame import TicTacToeGame
 from tictactoe.TicTacToePlayers import *
 from tictactoe.keras.NNet import NNetWrapper as TicTacToeKerasNNet
+
+from chesspy.ChessGame import ChessGame
+from chesspy.pytorch.NNet import NNetWrapper as ChessPytorchNNet
 
 from othello.OthelloGame import OthelloGame
 from othello.OthelloPlayers import *
@@ -54,6 +58,9 @@ class TestAllGames(unittest.TestCase):
 
         arena = Arena.Arena(n1p, rp, game)
         print(arena.playGames(2, verbose=False))
+
+    def test_chess_pytorch(self):
+        self.execute_game_test(ChessGame(), ChessPytorchNNet)
 
     def test_othello_pytorch(self):
         self.execute_game_test(OthelloGame(6), OthelloPytorchNNet)

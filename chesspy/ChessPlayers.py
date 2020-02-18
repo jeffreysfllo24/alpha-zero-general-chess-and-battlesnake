@@ -1,14 +1,16 @@
 import chess
 import random
 import numpy as np
-from _chess.ChessGame import who, from_move, mirror_move
+from chesspy.ChessGame import libPlayerToChessPlayer, from_move, mirror_move
+
+# code taken from https://github.com/namin/alpha-zero-general/tree/_chess
 
 class RandomPlayer():
     def __init__(self, game):
         self.game = game
 
     def play(self, board):
-        valids = self.game.getValidMoves(board, who(board.turn))
+        valids = self.game.getValidMoves(board, libPlayerToChessPlayer(board.turn))
         moves = np.argwhere(valids==1)
         return random.choice(moves)[0]
 

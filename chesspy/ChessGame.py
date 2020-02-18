@@ -25,10 +25,8 @@ class ChessGame(Game):
     """
 
     def __init__(self):
-        self.num_halfmoves = 0
         # TODO move to a location to be static
         self.all_possible_moves = create_uci_labels()
-
         # self.winner = None  # type: Winner
         # self.resigned = False
         # self.result = None
@@ -40,7 +38,8 @@ class ChessGame(Game):
                         that will be the input to your neural network)
         """
         # create input layers with fresh board
-        return create_input_planes(chess.Board())
+        # return create_input_planes(self.board.fen())
+        return chess.Board()
 
     def getBoardSize(self):
         """
@@ -69,10 +68,18 @@ class ChessGame(Game):
         """
         # TODO remove assert not required part for speed
         assert libPlayerToChessPlayer(board.turn) == player
-        assert action in board.legal_moves
+        move = self.all_possible_moves[action]
+        if not board.turn:  # black move from CanonicalForm
+            move = str(mirror_action(chess.Move.from_uci(move)))
 
-        # TODO check uci
-        return (board.execute_move(action), -player)
+        if move not in getAllowedMovesFromBoard(board): # must be a pawn promotion
+            # print(board)
+            # print(move, " is not valid - ",self.all_possible_moves[action])
+            move=move+self.all_possible_moves[action][-1:]
+            # print("moveupdated:",move)
+        board = board.copy()
+        board.push(chess.Move.from_uci(move))
+        return (board, -player)
 
     def getValidMoves(self, board, player):
         """
@@ -87,11 +94,12 @@ class ChessGame(Game):
         """
         # TODO remove assert not required part for speed
         assert libPlayerToChessPlayer(board.turn) == player
-        validMoves = [0] * self.getActionSize()
+        current_allowed_moves = np.array(getAllowedMovesFromBoard(board))
         # TODO find a better way
-        for move in board.get_legal_moves():
-            validMoves[np.argwhere(self.all_possible_moves == move)] = 1
-        return np.array(validMoves)
+        validMoves = np.isin(np.array(self.all_possible_moves), current_allowed_moves).astype(int)
+
+        assert np.sum(validMoves) == len(current_allowed_moves)
+        return validMoves
 
     def getGameEnded(self, board, player):
         """
@@ -129,7 +137,7 @@ class ChessGame(Game):
                             the colors and return the board.
         """
         # TODO remove assert not required part for speed
-        assert (libPlayerToChessPlayer(board.turn) == player)
+        assert libPlayerToChessPlayer(board.turn) == player
         if player == 1:
             return board
         else:
@@ -146,7 +154,7 @@ class ChessGame(Game):
                        form of the board and the corresponding pi vector. This
                        is used when training the neural network from examples.
         """
-        return [(board,pi)]
+        return [(board, pi)]
 
     def stringRepresentation(self, board):
         """
@@ -157,15 +165,29 @@ class ChessGame(Game):
             boardString: a quick conversion of board to a string format.
                          Required by MCTS for hashing.
         """
-        #TODO maybe remove player and 50 rule count also. board.fen().split(':')[0]
+        # TODO maybe player move matters?
         fen = board.fen()
-        l = fen.rindex(' ', fen.rindex(' '))
-        return fen[0:l]
+        # l = fen.rindex(' ', fen.rindex(' '))
+        # return fen[0:l]
+        parts = board.fen().split(' ')
+        return parts[0] + ' ' + parts[2] + ' ' + parts[3]
+
+    @staticmethod
+    def display(board):
+        print(board)
+
+    def toArray(self, board):
+        fen = board.fen()
+        fen = maybe_flip_fen(fen, is_black_turn(fen))
+        return all_input_planes(fen)
 
 
-def create_input_planes(fen):
-    fen = maybe_flip_fen(fen, is_black_turn(fen))
-    return all_input_planes(fen)
+def mirror_action(action):
+    return chess.Move(chess.square_mirror(action.from_square), chess.square_mirror(action.to_square))
+
+
+def getAllowedMovesFromBoard(board):
+    return [move.uci() for move in board.legal_moves]
 
 
 # reverse the fen representation as if black is white and vice-versa
