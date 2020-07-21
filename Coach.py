@@ -84,6 +84,7 @@ class Coach():
                 end = time.time()
     
                 for eps in range(self.args.numEps):
+                    print("In Epoch" + str(eps))
                     self.mcts = MCTS(self.game, self.nnet, self.args)   # reset search tree
                     iterationTrainExamples += self.executeEpisode()
     
@@ -97,7 +98,9 @@ class Coach():
 
                 # save the iteration examples to the history 
                 self.trainExamplesHistory.append(iterationTrainExamples)
-                
+
+            print("Done! Should be backing up files now")
+
             if len(self.trainExamplesHistory) > self.args.numItersForTrainExamplesHistory:
                 print("len(trainExamplesHistory) =", len(self.trainExamplesHistory), " => remove the oldest trainExamples")
                 self.trainExamplesHistory.pop(0)
