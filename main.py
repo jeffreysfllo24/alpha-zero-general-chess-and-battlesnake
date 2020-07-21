@@ -8,13 +8,13 @@ from utils import *
 
 
 args = dotdict({
-    'numIters': 100,
-    'numEps': 10,              # Number of complete self-play games to simulate during a new iteration.
+    'numIters': 10,
+    'numEps': 5,              # Number of complete self-play games to simulate during a new iteration.
     'tempThreshold': 15,        #
     'updateThreshold': 0.6,     # During arena playoff, new neural net will be accepted if threshold or more of games are won.
-    'maxlenOfQueue': 200000,    # Number of game examples to train the neural networks.
+    'maxlenOfQueue': 10,    # Number of game examples to train the neural networks.
     'numMCTSSims': 10,          # Number of games moves for MCTS to simulate.
-    'arenaCompare': 40,         # Number of games to play during arena play to determine if new net will be accepted.
+    'arenaCompare': 10,         # Number of games to play during arena play to determine if new net will be accepted.
     'cpuct': 1,
 
     'checkpoint': './training/',
@@ -36,7 +36,7 @@ if __name__ == "__main__":
         print("Load trainExamples from file")
         c.loadTrainExamples()
     sys.setrecursionlimit(100000)
-    threading.stack_size(200000000)
+    threading.stack_size(1500*1024)
     thread = threading.Thread(target=c.learn())
     thread.start()
     # c.learn()
